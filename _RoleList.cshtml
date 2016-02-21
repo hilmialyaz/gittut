@@ -1,0 +1,87 @@
+﻿@model List<Identity.ServiceModel.ServiceEntity.Role>
+@using Identity.Web.Resources
+@(Html.Kendo().Grid(Model.Select(r => new { Id =r.Id , rol= r, Selected = false}))
+    .Name("Grid")
+    .Columns(columns =>
+    {
+        columns.Bound(p => p.Id).Title(@Language.Select).Template(@<text></text>).ClientTemplate("<input id='#=Id#' type='checkbox' onchange=\"includeChecked('#=Id#', this.checked);\" # if(Selected){# checked #}# />").Width(60);
+        columns.Bound(p => p.rol.Name).Title(@Language.RoleName);
+        columns.Bound(p => p.rol.RoleType.Name).Title(@Language.RoleType);
+        columns.Bound(p => p.rol.Description).Title(@Language.Description);
+
+
+        columns.Command(command => command.Custom("delete").Text(@Language.Delete).Click("deleteRole")).Width(90);
+        columns.Command(command => command.Custom("edit").Text(@Language.Edit).Click("editRole")).Width(90);
+    })
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .Selectable()
+        .Filterable(filterable => filterable
+            .Extra(true)
+            .Operators(operators => operators
+                .ForString(str =>
+                            str.Clear()
+                                .IsEqualTo("eşitse")
+                                .IsNotEqualTo("eşit değilse")
+                                .StartsWith("ile başlayan")
+                                .Contains("içeren")
+                                .DoesNotContain("içermiyorsa")
+                                .EndsWith("ile biten")
+                    )
+                        .ForDate(dt => dt
+                                .IsEqualTo("eşitse")
+                                .IsNotEqualTo("eşit değilse")
+                                .IsGreaterThanOrEqualTo("sonrasında veya eşitse")
+                                .IsGreaterThan("sonrasında")
+                                .IsLessThanOrEqualTo("öncesinde veya eşitse")
+                                .IsLessThan("öncesinde")
+                                ))
+                                .Messages(messages
+                                        => messages
+                                        .And("VE")
+                                        .Or("VEYA")
+                                        .Info("")
+                                        .Filter("Göster")
+                                        .Clear("Temizle")))
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(10)
+        .ServerOperation(false)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+        })
+
+    )
+    .Resizable(resize => resize.Columns(true))
+    )
+
+
+
+<script type="text/javascript">
+    $('#btnCloneRole').addClass("k-state-disabled").prop("disabled", true);
+
+
+    function includeChecked(id, checked) {
+
+
+        $("#Grid").data("kendoGrid").dataSource.get(id).Selected = checked;
+        //$("#GridResource").data("kendoGrid").refresh();
+        prepareCloneBtn();
+
+    }
+
+
+    function prepareCloneBtn() {
+
+        var anyChecked = _.any($("#Grid").data("kendoGrid").dataSource.data(), function (next) { return next.Selected });
+
+        if (anyChecked)
+            $('#btnCloneRole').removeClass("k-state-disabled").addClass("k-item k-state-default").prop("disabled", false);
+        else
+            $('#btnCloneRole').addClass("k-state-disabled").prop("disabled", true);
+    } 
+	
+
+</script>
